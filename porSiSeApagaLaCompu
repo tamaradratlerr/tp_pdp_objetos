@@ -1,0 +1,92 @@
+class Entrada{
+  const banda
+  const fecha
+  const precioBase = 1000
+
+  method precioFinal() = precioBase + productora.impuesto()
+  method anioAnterior() = fecha.year() == new Date().year() -1
+  method nombreBanda() = banda.nombre()
+}
+
+//lo hice object por que es solo 1
+object productora {
+  //lo inicialiso como 0 pero con lo dep property la productora puede cambiarlo cuando quiera (por el setter)
+  var property impuesto = 0
+
+}
+
+class SinSaldoException inherits Exception{}
+
+class Asistente{
+  //acá hago composicion porque 
+  const abono
+  //historial es una lista porque pueden repetirse las entradas
+  var historial = []
+  var dinero
+
+  method hayDinero() = dinero > 0
+
+  method montoPagar(entrda) = abono.pagar(entrda.precioFinal())
+
+  method comprarEntradas(entrada) {
+    if (!self.hayDinero()) {
+      //uso manejon de errores lo que vimos en la última clase
+      throw new SinSaldoException(message = "No hay saldo disponible")
+    }
+    dinero -= self.montoPagar(entrada)
+    historial.add(entrada)
+  }
+
+  // acá por ejemplo use encapsulamiento  ya que no es trabajo de el asistente fijarse si la entrada es del año anteiorir, directamente le mando a entrada, sos de año anterior?
+  method entradasAnioAnterior() = historial.filter({entrada => entrada.anioAnterior()})
+  method nombreBandas() = historial.map({entrada => entrada.nombreBanda()})
+  method nombreBandasSinRepetir() = self.nombreBandas().asSet()
+  //no especifica si no quiere que se repitan los nombres pero por las dudas lo hice
+
+}
+
+//lo hago class ya que pueden haber muchos vip con distintos porcentajes y fan lo hago object porque solo hay un tipo de fan
+class Vip{
+  var porcentajeDescuento
+
+  method bonificar(){
+    porcentajeDescuento += 1
+  }
+
+  method pagar(precio) = precio * (100 - porcentajeDescuento) / 100
+}
+
+object fan {
+  method pagar(precio) = precio
+  method bonificar(){
+    //fan no hace nada si se hace abono.bonificar()
+  }
+}
+
+
+class Banda{
+  //pongo el property porque entrada necesita saber su nombre para mandarselo a la asistente y pongo const (que me deja solo el getter) ya que no cambia el nombre
+  const property nombre
+  var property canon = 1000000
+
+  //la hago una clase abstracta
+  method presupuesto() = self.canon() + self.extra()
+  method popularidad()
+  method extra()
+}
+
+class Rock inherits Banda{
+  const solos
+
+  override method extra() = 10000
+  override method popularidad() = solos * 100
+}
+
+class Trap inherits Banda{
+  var hielo
+
+  method hayHielo() = hielo > 0
+  override method extra() = 0
+  override method popularidad() = solos * 100
+
+}
