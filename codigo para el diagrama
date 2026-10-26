@@ -1,0 +1,124 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+class Entrada {
+  banda : Banda
+  fecha : Date
+  precioBase = 1000
+  --
+  precioFinal() : Number
+  anioAnterior() : Boolean
+  nombreBanda() : String
+}
+
+object productora {
+  impuesto : Number
+  asistentes : Set
+  bandas : Set
+  --
+  importeTotal() : Number
+  presupuestoBandas() : Number
+  gananciaTotal() : Number
+  totalEntradas() : Number
+  entradasVendidasDe(banda) : Number
+  bandaPopular() : Banda
+  bonificarVip()
+}
+
+class Asistente {
+  abono : Abono
+  historial : List
+  dinero : Number
+  --
+  hayDinero() : Boolean
+  montoPagar(entrada) : Number
+  comprarEntradas(entrada)
+  entradasAnioAnterior() : List
+  nombreBandas() : List
+  nombreBandasSinRepetir() : Set
+  bonificar()
+  totalImporteRecolectado() : Number
+  cantidadEntradas() : Number
+  cantidadEntradasDe(banda) : Number
+}
+
+interface Abono {
+  pagar(precio) : Number
+  bonificar()
+}
+
+class Vip {
+  porcentajeDescuento : Number
+  --
+  bonificar()
+  pagar(precio) : Number
+}
+
+object fan {
+  --
+  pagar(precio) : Number
+  bonificar()
+}
+
+class SinSaldoException {
+  message : String
+}
+
+abstract class Banda {
+  nombre : String
+  --
+  presupuesto() : Number
+  canon() : Number
+  largoNombre() : Number
+  {abstract} popularidad() : Number
+  {abstract} extra() : Number
+}
+
+class Rock {
+  solos : Number
+  --
+  extra() : Number
+  popularidad() : Number
+}
+
+class Trap {
+  hielo : Number
+  --
+  hayHielo() : Boolean
+  extra() : Number
+  popularidad() : Number
+  canon() : Number
+}
+
+class Indie {
+  instrumentos : List
+  --
+  popularidad() : Number
+  extra() : Number
+}
+
+class Exception
+
+' Herencia (hereda: hijo --|> padre)
+Rock --|> Banda
+Trap --|> Banda
+Indie --|> Banda
+SinSaldoException --|> Exception
+
+' Implementación (implementa: clase ..|> interfaz)
+Vip ..|> Abono
+fan ..|> Abono
+
+' Conoce (-->)
+Entrada --> "1" Banda : conoce
+Asistente "1" --> "0..*" Entrada : conoce
+Asistente --> "1" Abono : conoce
+productora "1" --> "0..*" Asistente : conoce
+productora "1" --> "0..*" Banda : conoce
+
+' Usa (..>)
+Entrada ..> productora : usa
+Asistente ..> SinSaldoException : usa
+
+@enduml
