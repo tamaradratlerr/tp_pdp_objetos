@@ -27,10 +27,14 @@ object productora {
   method bonificarVip() = asistentes.forEach({asistente => asistente.bonificar()})
 }
 
+
 class SinSaldoException inherits Exception{}
 
 class Asistente{
-  //acá hago composicion porque 
+  // acá hago composición porque tiene un atributo abono, que es otro objeto que colabora con él para resolver cosas.
+  // el asistente delega en el abono el cálculo del precio a pagar y la bonificación, sin conocer cómo se implementan esas operaciones.
+  // y así puedo tener distintos tipos de abono, como Vip y fan, que responden de forma diferente a los mismos mensajes.
+  // también usa el polimorfismo y evita tener que agregar condicionales en Asistente.
   const abono
   //historial es una lista porque pueden repetirse las entradas
   const historial = []
@@ -42,7 +46,9 @@ class Asistente{
 
   method comprarEntradas(entrada) {
     if (!self.hayDinero()) {
-      //uso manejon de errores lo que vimos en la última clase
+      //uso manejon de errores lo que vimos en la última clase, porque necesito contemplar la situación en la que un asistente intenta comprar una entrada sin tener saldo disponible.
+      // para eso verifico la condición con hayDinero() y, si no tiene dinero, lanzo una excepción que permite señalar que la compra no se puede realizar y 
+      // evito que se continúe con el descuento del dinero y el registro de la entrada
       throw new SinSaldoException(message = "No hay saldo disponible")
     }
     dinero -= self.montoPagar(entrada)
@@ -50,7 +56,11 @@ class Asistente{
   }
 
 
-  // acá por ejemplo use encapsulamiento  ya que no es trabajo de el asistente fijarse si la entrada es del año anteiorir, directamente le mando a entrada, sos de año anterior?
+  // acá por ejemplo use encapsulamiento porque cada objeto se ocupa de sus propios datos y responsabilidades.
+  // por ejemplo, cuando necesito saber qué entradas son del año anterior, el asistente le pregunta a cada entrada mediante anioAnterior(),
+  // en lugar de acceder directamente a su fecha y hacer el cálculo. 
+  // así cada clase conoce y administra sus propias cosas
+  
   method entradasAnioAnterior() = historial.filter({entrada => entrada.anioAnterior()})
   method nombreBandas() = historial.map({entrada => entrada.nombreBanda()})
   method nombreBandasSinRepetir() = self.nombreBandas().asSet()
