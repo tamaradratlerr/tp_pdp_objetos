@@ -1,5 +1,5 @@
 class Entrada{
-  const banda
+  const property banda
   const fecha
   const precioBase = 1000
 
@@ -15,8 +15,18 @@ object productora {
   const asistentes = #{}
   const bandas = #{}
 
-  //acá también estoy usando mucho encapsulamiento y declaratividad
+  //hago estas funciones para probarlo
+    method agregarBanda(unaBanda) {
+    bandas.add(unaBanda)
+  }
 
+  method agregarAsistente(unAsistente) {
+    asistentes.add(unAsistente)
+  }
+
+  //acá uso declaratividad: uso mensajes de colecciones (sum, filter, map, count) en vez de recorrer a mano.
+  //y también uso encapsulamiento 
+  
   method importeTotal() = asistentes.sum({asistente => asistente.totalImporteRecolectado()})
   method presupuestoBandas() = bandas.sum({banda => banda.presupuesto()})
   
@@ -24,7 +34,9 @@ object productora {
   method totalEntradas() = asistentes.sum({asistente => asistente.cantidadEntradas()})
   method entradasVendidasDe(banda) = asistentes.sum({asistente => asistente.cantidadEntradasDe(banda)})
   method bandaPopular() = bandas.max({banda => self.entradasVendidasDe(banda)})
-  method bonificarVip() = asistentes.forEach({asistente => asistente.bonificar()})
+  method bonificarVip() {
+    asistentes.forEach({asistente => asistente.bonificar()})
+  }
 }
 
 
@@ -38,7 +50,7 @@ class Asistente{
   const abono
   //historial es una lista porque pueden repetirse las entradas
   const historial = []
-  var dinero
+  var property dinero
 
   method hayDinero() = dinero > 0
 
@@ -68,7 +80,9 @@ class Asistente{
 
 
   //las funciones para poder respodbner a la productora
-  method bonificar() = abono.bonificar()
+  method bonificar() {
+    abono.bonificar()
+  }
   method totalImporteRecolectado() = historial.sum({entrada => entrada.precioFinal()})
   method cantidadEntradas() = historial.size()
   method cantidadEntradasDe(bandaBuscada) = historial.count({entrada => entrada.banda() == bandaBuscada})
@@ -93,16 +107,33 @@ object fan {
   }
 }
 
+
+// uso HERENCIA entre las bandas porque las tres comparten comportamiento: todas tienen nombre,
+// canon y calculan su presupuesto igual. sólo se diferencian en la popularidad y el gasto extra.
+// elijo herencia y no composición porque el género de una banda es una característica estática:
+// una banda de rock no se vuelve trapera durante la ejecución. la composición la uso para el abono,
+// que sí podría cambiar, y porque no se puede cambiar la clase de un objeto en tiempo de ejecución.
+
 class Banda {
   //pongo el property porque entrada necesita saber su nombre para mandarselo a la asistente y pongo const (que me deja solo el getter) ya que no cambia el nombre
   const property nombre
+  const canonBase = 1000000
+
+  // escribo presupuesto() una sola vez acá y uso self.canon() en vez de leer un atributo.
+  // al mandarme el mensaje a mí misma uso lo del method lookup, que busca primero en la clase
+  // de la instancia: por eso Trap puede redefinir canon() con override y este mismo presupuesto()
+  // le sirve igual, sin tocar una línea.
 
   method presupuesto() = self.canon() + self.extra()
 
-  method canon() = 1000000
+  method canon() = canonBase
   method largoNombre() = self.nombre().length()
   
-  //la hago una clase abstracta
+  // Banda es una clase abstracta
+  // declaro popularidad() y extra() sólo con la firma, sin cuerpo, porque no hay un cálculo
+  // común a todas. son metodos abstractos, y al tenerlos Wollok ya no me deja instanciar Banda.
+  // cada subclase está obligada a redefinirlos.
+
   method popularidad()
   method extra()
 }
@@ -129,7 +160,7 @@ class Trap inherits Banda {
     }
   }
 
-  override method canon() = 1000000 * self.popularidad()
+  override method canon() = canonBase * self.popularidad()
 }
 
 class Indie inherits Banda {
